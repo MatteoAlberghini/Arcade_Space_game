@@ -3,12 +3,22 @@ import math
 import arcade
 import os
 
+'''
+TO DO: 
+- Fix bug when you spawn you dont shoot for a while
+- Rename everything
+- Comment everything
+- Start game screen
+- Game over screen
+- Change / more flashy texts
+'''
+
 STARTING_ASTEROID_COUNT = 10
 SCALE = 0.5
 OFFSCREEN_SPACE = 300
 SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 800
-SCREEN_TITLE = "Asteroid Smasher"
+SCREEN_TITLE = "xdxdxddxdx"
 LEFT_LIMIT = -OFFSCREEN_SPACE
 RIGHT_LIMIT = SCREEN_WIDTH + OFFSCREEN_SPACE
 BOTTOM_LIMIT = -OFFSCREEN_SPACE
@@ -18,49 +28,77 @@ VIEWPORT_MARGIN = 20
 
 class TurningSprite(arcade.Sprite):
     """ Sprite that sets its angle to the direction it is traveling in. """
+
+    """
+    0. Called each frame
+    - 1. Super class 
+    - 2. Angle update
+    """
     def update(self):
+
+        # 1.
         super().update()
+
+        # 2.
         self.angle = math.degrees(math.atan2(self.change_y, self.change_x))
 
 
 class ShipSprite(arcade.Sprite):
     """
     Sprite that represents our space ship.
-
     Derives from arcade.Sprite.
     """
-    def __init__(self, filename, scale):
-        """ Set up the space ship. """
 
-        # Call the parent Sprite constructor
+    """ 
+    0. Set up the space ship.
+    - 1. Call the parent Sprite constructor
+    - 2. Player info, angle from parent class
+    - 3. Respawn player
+    """
+    def __init__(self, filename, scale):
+
+        # 1.
         super().__init__(filename, scale)
 
-        # Info on where we are going.
-        # Angle comes in automatically from the parent class.
+        # 2.
         self.thrust = 0
         self.speed = 0
         self.max_speed = 4
         self.drag = 0.05
         self.respawning = 0
 
-        # Mark that we are respawning.
+        # 3.
         self.respawn()
 
+    """
+    0. Respawn function
+    - 1. Respawning indicates we are in the middle of respawning (non zero = in the middle of)
+    - 2. Center x and y to middle screen
+    - 3. Reset player angle
+    """
     def respawn(self):
-        """
-        Called when we die and need to make a new ship.
-        'respawning' is an invulnerability timer.
-        """
-        # If we are in the middle of respawning, this is non-zero.
+
+        # 1.
         self.respawning = 1
+
+        # 2.
         self.center_x = SCREEN_WIDTH / 2
         self.center_y = SCREEN_HEIGHT / 2
+
+        # 3.
         self.angle = 0
 
+    """
+    0. Update called each game cycle
+    - 1. If we are in the middle of respawning (!!!TODO!!!)
+    - 2. Speed is incrementaly faster with thrust
+    - 3. Change x and change y updated with angles
+    - 4. We change player position based on change x and change y
+    - 5. Call super class
+    """
     def update(self):
-        """
-        Update our position and other particulars.
-        """
+
+        # 1.
         if self.respawning:
             self.respawning += 1
             self.alpha = self.respawning
@@ -77,19 +115,22 @@ class ShipSprite(arcade.Sprite):
             if self.speed > 0:
                 self.speed = 0
 
+        # 2.
         self.speed += self.thrust
         if self.speed > self.max_speed:
             self.speed = self.max_speed
         if self.speed < -self.max_speed:
             self.speed = -self.max_speed
 
+        # 3.
         self.change_x = -math.sin(math.radians(self.angle)) * self.speed
         self.change_y = math.cos(math.radians(self.angle)) * self.speed
 
+        # 4.
         self.center_x += self.change_x
         self.center_y += self.change_y
 
-        """ Call the parent class. """
+        # 5.
         super().update()
 
 
