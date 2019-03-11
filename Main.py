@@ -5,12 +5,13 @@ import os
 
 '''
 TO DO: 
-- Fix bug when you spawn you dont shoot for a while
+- Fix "bug" when you spawn you don't shoot for a while
 - Rename everything
 - Comment everything
 - Start game screen
 - Game over screen
 - Change / more flashy texts
+- Sounds
 '''
 
 
