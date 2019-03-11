@@ -5,13 +5,11 @@ import os
 
 '''
 TO DO: 
-- Fix "bug" when you spawn you don't shoot for a while
 - Rename everything
 - Comment everything
-- Start game screen
-- Game over screen
 - Change / more flashy texts
 - Sounds
+- Better health bar
 '''
 
 
@@ -36,11 +34,11 @@ SCALE = 0.5
 OFFSCREEN_SPACE = 300
 
 # 4.
-SCREEN_WIDTH = 1280
-SCREEN_HEIGHT = 800
+SCREEN_WIDTH = 1440
+SCREEN_HEIGHT = 900
 
 # 5.
-SCREEN_TITLE = "xdxdxddxdx"
+SCREEN_TITLE = "Just a random space game"
 
 # 6.
 LEFT_LIMIT = -OFFSCREEN_SPACE
@@ -50,6 +48,12 @@ TOP_LIMIT = SCREEN_HEIGHT + OFFSCREEN_SPACE
 
 # 7.
 VIEWPORT_MARGIN = 20
+
+# These numbers represent "states" that the game can be in.
+INSTRUCTIONS_PAGE_0 = 0
+INSTRUCTIONS_PAGE_1 = 1
+GAME_RUNNING = 2
+GAME_OVER = 3
 
 
 class TurningSprite(arcade.Sprite):
@@ -128,7 +132,7 @@ class ShipSprite(arcade.Sprite):
         if self.respawning:
             self.respawning += 1
             self.alpha = self.respawning
-            if self.respawning > 250:
+            if self.respawning > 25:
                 self.respawning = 0
                 self.alpha = 255
         if self.speed > 0:
@@ -231,6 +235,42 @@ class MyGame(arcade.Window):
         # Sounds
         #self.laser_sound = arcade.load_sound("sounds/laser1.wav")
 
+        # Start 'state' will be showing the first page of instructions.
+        self.current_state = INSTRUCTIONS_PAGE_0
+
+        # Instructions
+        self.instructions = []
+        texture_start_screen = arcade.load_texture("assets/UI/start_text.png")
+        self.instructions.append(texture_start_screen)
+        texture_game_over = arcade.load_texture("assets/UI/game_over_text.png")
+        self.instructions.append(texture_game_over)
+        texture_restart = arcade.load_texture("assets/UI/restart_text.png")
+        self.instructions.append(texture_restart)
+
+    # STEP 2: Add this function.
+    def draw_instructions_page(self, page_number):
+        """
+        Draw an instruction page. Load the page as an image.
+        """
+        self.draw_game()
+        arcade.draw_texture_rectangle(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 1.5,
+                                      self.instructions[0].width,
+                                      self.instructions[0].height, self.instructions[0], 0)
+
+    # STEP 3: Add this function
+    def draw_game_over(self):
+        """
+        Draw "Game over" across the screen.
+        """
+        arcade.draw_texture_rectangle(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 1.5,
+                                      self.instructions[1].width,
+                                      self.instructions[1].height, self.instructions[1], 0)
+
+        arcade.draw_texture_rectangle(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2.25,
+                                      self.instructions[2].width,
+                                      self.instructions[2].height, self.instructions[2], 0)
+
+
     def start_new_game(self):
         """ Set up the game and initialize the variables. """
 
@@ -238,7 +278,7 @@ class MyGame(arcade.Window):
         self.game_over = False
 
         # background image
-        self.background = arcade.load_texture("bg.png")
+        self.background = arcade.load_texture("assets/UI/bg.png")
 
         # Sprite lists
         self.all_sprites_list = arcade.SpriteList()
@@ -248,14 +288,14 @@ class MyGame(arcade.Window):
 
         # Set up the player
         self.score = 0
-        self.player_sprite = ShipSprite("ship.png", SCALE)
+        self.player_sprite = ShipSprite("assets/player/ship.png", SCALE)
         self.all_sprites_list.append(self.player_sprite)
         self.lives = 3
 
         # Set up the little icons that represent the player lives.
         cur_pos = 10
         for i in range(self.lives):
-            life = arcade.Sprite("horizontal_bar_red.png", SCALE)
+            life = arcade.Sprite("assets/UI/horizontal_bar_red.png", SCALE)
             life.center_x = cur_pos + life.width
             life.center_y = life.height
             cur_pos += life.width
@@ -263,10 +303,10 @@ class MyGame(arcade.Window):
             self.ship_life_list.append(life)
 
         # Make the asteroids
-        image_list = ("asteroid_grey.png",
-                      "asteroid_grey_tiny.png",
-                      "pixel_asteroid.png",
-                      "asteroid_tiny.png")
+        image_list = ("assets/enemy/asteroid_grey.png",
+                      "assets/enemy/asteroid_grey_tiny.png",
+                      "assets/enemy/pixel_asteroid.png",
+                      "assets/enemy/asteroid_tiny.png")
         for i in range(STARTING_ASTEROID_COUNT):
             image_no = random.randrange(4)
             enemy_sprite = AsteroidSprite(image_list[image_no], SCALE)
@@ -291,6 +331,20 @@ class MyGame(arcade.Window):
         # This command has to happen before we start drawing
         arcade.start_render()
 
+        if self.current_state == INSTRUCTIONS_PAGE_0:
+            self.draw_instructions_page(0)
+
+        elif self.current_state == INSTRUCTIONS_PAGE_1:
+            self.draw_instructions_page(1)
+
+        elif self.current_state == GAME_RUNNING:
+            self.draw_game()
+
+        else:
+            self.draw_game()
+            self.draw_game_over()
+
+    def draw_game(self):
         # Draw background
         arcade.draw_texture_rectangle(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, SCREEN_WIDTH,
                                       SCREEN_HEIGHT, self.background)
@@ -305,11 +359,19 @@ class MyGame(arcade.Window):
         output = f"Asteroid Count: {len(self.asteroid_list)}"
         arcade.draw_text(output, 10, 50, arcade.color.WHITE, 13)
 
+
     def on_key_press(self, symbol, modifiers):
         """ Called whenever a key is pressed. """
         # Shoot if the player hit the space bar and we aren't respawning.
+        if self.current_state == INSTRUCTIONS_PAGE_0 and symbol == arcade.key.SPACE:
+            self.start_new_game()
+            self.current_state = GAME_RUNNING
+        if self.current_state == GAME_OVER and symbol == arcade.key.SPACE:
+            self.start_new_game()
+            self.current_state = GAME_RUNNING
+
         if not self.player_sprite.respawning and symbol == arcade.key.SPACE:
-            bullet_sprite = BulletSprite("laser.png", SCALE)
+            bullet_sprite = BulletSprite("assets/player/laser.png", SCALE)
             bullet_sprite.guid = "Bullet"
 
             bullet_speed = 13
@@ -357,8 +419,8 @@ class MyGame(arcade.Window):
         if asteroid.size == 4:
             for i in range(3):
                 image_no = random.randrange(2)
-                image_list = ["asteroid_grey_tiny.png",
-                              "asteroid_tiny.png"]
+                image_list = ["assets/enemy/asteroid_grey_tiny.png",
+                              "assets/enemy/asteroid_tiny.png"]
 
                 enemy_sprite = AsteroidSprite(image_list[image_no],
                                               SCALE * 1.5)
@@ -377,8 +439,8 @@ class MyGame(arcade.Window):
         elif asteroid.size == 3:
             for i in range(3):
                 image_no = random.randrange(2)
-                image_list = ["asteroid_grey_tiny.png",
-                              "asteroid_tiny.png"]
+                image_list = ["assets/enemy/asteroid_grey_tiny.png",
+                              "assets/enemy/asteroid_tiny.png"]
 
                 enemy_sprite = AsteroidSprite(image_list[image_no],
                                               SCALE * 1.5)
@@ -397,8 +459,8 @@ class MyGame(arcade.Window):
         elif asteroid.size == 2:
             for i in range(3):
                 image_no = random.randrange(2)
-                image_list = ["asteroid_grey_tiny.png",
-                              "asteroid_tiny.png"]
+                image_list = ["assets/enemy/asteroid_grey_tiny.png",
+                              "assets/enemy/asteroid_tiny.png"]
 
                 enemy_sprite = AsteroidSprite(image_list[image_no],
                                               SCALE * 1.5)
@@ -417,6 +479,9 @@ class MyGame(arcade.Window):
 
     def update(self, x):
         """ Move everything """
+
+        if self.current_state != GAME_RUNNING:
+            return
 
         self.frame_count += 1
 
@@ -448,7 +513,7 @@ class MyGame(arcade.Window):
                         print("Crash")
                     else:
                         self.game_over = True
-                        print("Game over")
+                        self.current_state = GAME_OVER
 
         changed_right = False
         changed_left = False
@@ -490,6 +555,7 @@ class MyGame(arcade.Window):
 
         if changed_top:
             self.player_sprite.center_y = 75
+
 
 def main():
     window = MyGame()
