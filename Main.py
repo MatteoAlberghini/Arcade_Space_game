@@ -13,16 +13,41 @@ TO DO:
 - Change / more flashy texts
 '''
 
+
+"""
+0. VARIABLES: 
+- 1. Starting asteroid count
+- 2. Scale factor
+- 3. Limit of screen space
+- 4. Screen width, height
+- 5. Title
+- 6. Limits
+- 7. Margin when you hit screen margins (from left to right from top to botton)
+"""
+
+# 1.
 STARTING_ASTEROID_COUNT = 10
+
+# 2.
 SCALE = 0.5
+
+# 3.
 OFFSCREEN_SPACE = 300
+
+# 4.
 SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 800
+
+# 5.
 SCREEN_TITLE = "xdxdxddxdx"
+
+# 6.
 LEFT_LIMIT = -OFFSCREEN_SPACE
 RIGHT_LIMIT = SCREEN_WIDTH + OFFSCREEN_SPACE
 BOTTOM_LIMIT = -OFFSCREEN_SPACE
 TOP_LIMIT = SCREEN_HEIGHT + OFFSCREEN_SPACE
+
+# 7.
 VIEWPORT_MARGIN = 20
 
 
