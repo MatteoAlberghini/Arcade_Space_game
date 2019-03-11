@@ -1,29 +1,19 @@
-"""
-Asteroid Smasher
-
-Shoot space rocks in this demo program created with
-Python and the Arcade library.
-
-Artwork from http://kenney.nl
-
-If Python and Arcade are installed, this example can be run from the command line with:
-python -m arcade.examples.asteroid_smasher
-"""
 import random
 import math
 import arcade
 import os
 
-STARTING_ASTEROID_COUNT = 3
+STARTING_ASTEROID_COUNT = 10
 SCALE = 0.5
 OFFSCREEN_SPACE = 300
-SCREEN_WIDTH = 800
-SCREEN_HEIGHT = 600
+SCREEN_WIDTH = 1280
+SCREEN_HEIGHT = 800
 SCREEN_TITLE = "Asteroid Smasher"
 LEFT_LIMIT = -OFFSCREEN_SPACE
 RIGHT_LIMIT = SCREEN_WIDTH + OFFSCREEN_SPACE
 BOTTOM_LIMIT = -OFFSCREEN_SPACE
 TOP_LIMIT = SCREEN_HEIGHT + OFFSCREEN_SPACE
+VIEWPORT_MARGIN = 20
 
 
 class TurningSprite(arcade.Sprite):
@@ -160,11 +150,16 @@ class MyGame(arcade.Window):
         self.asteroid_list = None
         self.bullet_list = None
         self.ship_life_list = None
+        self.background = None
 
         # Set up the player
         self.score = 0
         self.player_sprite = None
         self.lives = 3
+
+        # Scroll
+        self.view_bottom = 0
+        self.view_left = 0
 
         # Sounds
         #self.laser_sound = arcade.load_sound("sounds/laser1.wav")
@@ -175,6 +170,9 @@ class MyGame(arcade.Window):
         self.frame_count = 0
         self.game_over = False
 
+        # background image
+        self.background = arcade.load_texture("bg.png")
+
         # Sprite lists
         self.all_sprites_list = arcade.SpriteList()
         self.asteroid_list = arcade.SpriteList()
@@ -183,7 +181,7 @@ class MyGame(arcade.Window):
 
         # Set up the player
         self.score = 0
-        self.player_sprite = ShipSprite("pixel_ship.png", SCALE)
+        self.player_sprite = ShipSprite("ship.png", SCALE)
         self.all_sprites_list.append(self.player_sprite)
         self.lives = 3
 
@@ -226,6 +224,10 @@ class MyGame(arcade.Window):
         # This command has to happen before we start drawing
         arcade.start_render()
 
+        # Draw background
+        arcade.draw_texture_rectangle(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, SCREEN_WIDTH,
+                                      SCREEN_HEIGHT, self.background)
+
         # Draw all the sprites.
         self.all_sprites_list.draw()
 
@@ -240,7 +242,7 @@ class MyGame(arcade.Window):
         """ Called whenever a key is pressed. """
         # Shoot if the player hit the space bar and we aren't respawning.
         if not self.player_sprite.respawning and symbol == arcade.key.SPACE:
-            bullet_sprite = BulletSprite("images/laserBlue01.png", SCALE)
+            bullet_sprite = BulletSprite("laser.png", SCALE)
             bullet_sprite.guid = "Bullet"
 
             bullet_speed = 13
@@ -257,12 +259,12 @@ class MyGame(arcade.Window):
             self.all_sprites_list.append(bullet_sprite)
             self.bullet_list.append(bullet_sprite)
 
-            arcade.play_sound(self.laser_sound)
+            #arcade.play_sound(self.laser_sound)
 
         if symbol == arcade.key.A:
-            self.player_sprite.change_angle = 3
+            self.player_sprite.change_angle = 2
         elif symbol == arcade.key.D:
-            self.player_sprite.change_angle = -3
+            self.player_sprite.change_angle = -2.5
         elif symbol == arcade.key.W:
             self.player_sprite.thrust = 0.15
         elif symbol == arcade.key.S:
@@ -288,8 +290,8 @@ class MyGame(arcade.Window):
         if asteroid.size == 4:
             for i in range(3):
                 image_no = random.randrange(2)
-                image_list = ["asteroid_grey.png",
-                              "pixel_asteroid.png"]
+                image_list = ["asteroid_grey_tiny.png",
+                              "asteroid_tiny.png"]
 
                 enemy_sprite = AsteroidSprite(image_list[image_no],
                                               SCALE * 1.5)
@@ -328,8 +330,8 @@ class MyGame(arcade.Window):
         elif asteroid.size == 2:
             for i in range(3):
                 image_no = random.randrange(2)
-                image_list = ["images/meteorGrey_tiny1.png",
-                              "images/meteorGrey_tiny2.png"]
+                image_list = ["asteroid_grey_tiny.png",
+                              "asteroid_tiny.png"]
 
                 enemy_sprite = AsteroidSprite(image_list[image_no],
                                               SCALE * 1.5)
@@ -381,6 +383,46 @@ class MyGame(arcade.Window):
                         self.game_over = True
                         print("Game over")
 
+        changed_right = False
+        changed_left = False
+        changed_top = False
+        changed_bottom = False
+
+        # Scroll left
+        left_bndry = self.view_left + VIEWPORT_MARGIN
+        if self.player_sprite.left < left_bndry:
+            self.view_left -= left_bndry - self.player_sprite.left
+            changed_left = True
+
+        # Scroll right
+        right_bndry = self.view_left + SCREEN_WIDTH - VIEWPORT_MARGIN
+        if self.player_sprite.right > right_bndry:
+            self.view_left += self.player_sprite.right - right_bndry
+            changed_right = True
+
+        # Scroll up
+        top_bndry = self.view_bottom + SCREEN_HEIGHT - VIEWPORT_MARGIN
+        if self.player_sprite.top > top_bndry:
+            self.view_bottom += self.player_sprite.top - top_bndry
+            changed_top = True
+
+        # Scroll down
+        bottom_bndry = self.view_bottom + VIEWPORT_MARGIN
+        if self.player_sprite.bottom < bottom_bndry:
+            self.view_bottom -= bottom_bndry - self.player_sprite.bottom
+            changed_bottom = True
+
+        if changed_right:
+            self.player_sprite.center_x = 75
+
+        if changed_left:
+            self.player_sprite.center_x = SCREEN_WIDTH - 75
+
+        if changed_bottom:
+            self.player_sprite.center_y = SCREEN_HEIGHT - 75
+
+        if changed_top:
+            self.player_sprite.center_y = 75
 
 def main():
     window = MyGame()
