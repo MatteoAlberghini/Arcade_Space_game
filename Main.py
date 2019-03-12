@@ -303,7 +303,7 @@ class MyGame(arcade.Window):
     """
     def start_new_game(self):
 
-        if self.current_state == GAME_RUNNING and self.is_background_music_on:
+        if self.current_state == GAME_RUNNING and not self.is_background_music_on:
             arcade.play_sound(self.background_sound)
             self.is_background_music_on = True
 
