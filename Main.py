@@ -21,6 +21,7 @@ TO DO:
 - 6. Limits
 - 7. Margin when you hit screen margins (from left to right from top to bottom)
 - 8. These numbers represent "states" that the game can be in
+- 9. Asteroid velocity
 """
 
 # 1.
@@ -54,6 +55,8 @@ INSTRUCTIONS_PAGE_1 = 1
 GAME_RUNNING = 2
 GAME_OVER = 3
 
+# 9.
+ASTEROID_SPEED = 7
 
 class TurningSprite(arcade.Sprite):
     """ Sprite that sets its angle to the direction it is traveling in. """
@@ -246,6 +249,7 @@ class MyGame(arcade.Window):
         # 5.
         self.laser_sound = arcade.load_sound("assets/sounds/laser.wav")
         self.background_sound = arcade.load_sound("assets/sounds/spy_background_pixel_3.mp3")
+        self.is_background_music_on = False
 
         # 6.
         self.current_state = INSTRUCTIONS_PAGE_0
@@ -299,8 +303,9 @@ class MyGame(arcade.Window):
     """
     def start_new_game(self):
 
-        if self.current_state == GAME_RUNNING:
+        if self.current_state == GAME_RUNNING and self.is_background_music_on:
             arcade.play_sound(self.background_sound)
+            self.is_background_music_on = True
 
         # 1.
         self.frame_count = 0
@@ -344,8 +349,8 @@ class MyGame(arcade.Window):
             enemy_sprite.center_y = random.randrange(BOTTOM_LIMIT, TOP_LIMIT)
             enemy_sprite.center_x = random.randrange(LEFT_LIMIT, RIGHT_LIMIT)
 
-            enemy_sprite.change_x = random.random() * 2.5 - 1
-            enemy_sprite.change_y = random.random() * 2.5 - 1
+            enemy_sprite.change_x = random.random() * ASTEROID_SPEED - 1
+            enemy_sprite.change_y = random.random() * ASTEROID_SPEED - 1
 
             enemy_sprite.change_angle = (random.random() - 0.5) * 2
             enemy_sprite.size = 4
@@ -492,8 +497,8 @@ class MyGame(arcade.Window):
                 enemy_sprite.center_y = y
                 enemy_sprite.center_x = x
 
-                enemy_sprite.change_x = random.random() * 2.5 - 1.25
-                enemy_sprite.change_y = random.random() * 2.5 - 1.25
+                enemy_sprite.change_x = random.random() * 3 - 1.25
+                enemy_sprite.change_y = random.random() * 3 - 1.25
 
                 enemy_sprite.change_angle = (random.random() - 0.5) * 2
                 enemy_sprite.size = 3
@@ -514,8 +519,8 @@ class MyGame(arcade.Window):
                 enemy_sprite.center_y = y
                 enemy_sprite.center_x = x
 
-                enemy_sprite.change_x = random.random() * 3 - 1.5
-                enemy_sprite.change_y = random.random() * 3 - 1.5
+                enemy_sprite.change_x = random.random() * 3.5 - 1.5
+                enemy_sprite.change_y = random.random() * 3.5 - 1.5
 
                 enemy_sprite.change_angle = (random.random() - 0.5) * 2
                 enemy_sprite.size = 2
@@ -536,8 +541,8 @@ class MyGame(arcade.Window):
                 enemy_sprite.center_y = y
                 enemy_sprite.center_x = x
 
-                enemy_sprite.change_x = random.random() * 3.5 - 1.75
-                enemy_sprite.change_y = random.random() * 3.5 - 1.75
+                enemy_sprite.change_x = random.random() * 4 - 1.75
+                enemy_sprite.change_y = random.random() * 4 - 1.75
 
                 enemy_sprite.change_angle = (random.random() - 0.5) * 2
                 enemy_sprite.size = 1
